@@ -195,7 +195,7 @@ public class SettingsFrame extends JFrame {
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				dispose();
+				System.exit(0);
 			}
 		});
 		

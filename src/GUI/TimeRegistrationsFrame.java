@@ -157,7 +157,7 @@ public class TimeRegistrationsFrame extends JFrame{
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				dispose();
+				System.exit(0);
 			}
 		});
 		
