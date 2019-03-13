@@ -42,6 +42,8 @@ public class SettingsFrame extends JFrame {
 	
 	String computername = System.getProperty("user.name");
 	
+	final byte iconWidth = 32, iconHeight = 32;
+	
 	public SettingsFrame() {
 				
 		//Layout
@@ -52,14 +54,14 @@ public class SettingsFrame extends JFrame {
 		jp.setBackground(new java.awt.Color(224, 74, 74));	
 		
 		closeBtn = new JButton();
-		closeBtn.setBounds(568, 0, 32, 32);
+		closeBtn.setBounds(568, 0, iconWidth, iconHeight);
 		closeBtn.setBorderPainted(false);
 		closeBtn.setBorder(null);
 		closeBtn.setContentAreaFilled(false);
 		closeBtn.setIcon(new ImageIcon(getClass().getResource("/close_operation.png")));
 		
 		minimizeBtn = new JButton();
-		minimizeBtn.setBounds(532, 0, 32, 32);
+		minimizeBtn.setBounds(532, 0, iconWidth, iconHeight);
 		minimizeBtn.setBorderPainted(false);
 		minimizeBtn.setBorder(null);
 		minimizeBtn.setContentAreaFilled(false);
@@ -136,8 +138,8 @@ public class SettingsFrame extends JFrame {
 		password = new JTextField("");
 		password.setBounds(410,140,100,32);
 		
-		testSQLConnection = new JButton("Testen");
-		testSQLConnection.setBounds(general.centerObject(32), 190, 32, 32);
+		testSQLConnection = new JButton();
+		testSQLConnection.setBounds(general.centerObject(32), 190, iconWidth, iconHeight);
 		testSQLConnection.setBorderPainted(false);
 		testSQLConnection.setBorder(null);
 		testSQLConnection.setContentAreaFilled(false);
@@ -156,7 +158,7 @@ public class SettingsFrame extends JFrame {
 		authorizationkey.setVisible(false);
 		
 		saveSettings = new JButton();
-		saveSettings.setBounds(general.centerObject(32), 330, 32, 32);
+		saveSettings.setBounds(general.centerObject(32), 330, iconWidth, iconHeight);
 		saveSettings.setBorderPainted(false);
 		saveSettings.setBorder(null);
 		saveSettings.setContentAreaFilled(false);
@@ -195,7 +197,7 @@ public class SettingsFrame extends JFrame {
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
+				dispose();
 			}
 		});
 		
@@ -254,9 +256,10 @@ public class SettingsFrame extends JFrame {
 	private void onAfterValidateTestSQLConnection() {
 		settings.changeSettings(getDatabaseTextFieldValues());
 		if (showMemberFieldsIfIsConnectedToDatabase()) {
-			JOptionPane.showMessageDialog(null, "Verbindung zur Datenbank war erfolgreich.", "Test erfolgreich", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Connection to database was succuessful.", "Test Successful", JOptionPane.OK_OPTION);
+			general.restartApplication();
 		}else {
-			JOptionPane.showMessageDialog(null, "Verbindung zur Datenbank ist fehlgeschlagen.", "Test fehlgeschlagen", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Connection to database failed.", "Test failed", JOptionPane.OK_OPTION);
 		}
 	}
 	

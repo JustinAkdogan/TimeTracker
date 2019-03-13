@@ -1,10 +1,17 @@
 package Functions;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JOptionPane;
+
+import GUI.MainFrame;
 
 public class General {
 	
@@ -49,6 +56,10 @@ public class General {
 		   return position;
 	}
 	
+	public int centerVerticallyOnObj(int ObjectY, int ObjectHeight, int thisHeight) {
+		return ObjectY + (ObjectHeight / 2) - (thisHeight/2);
+	}
+	
 	//This function calculates the total hours of one day for the Bar chart
 	public float calculateHoursForBarChart(Time savedStartTime, Time savedEndTime ) {
 		int savedStartHours = savedStartTime.getHours() * (60 * 60);
@@ -76,6 +87,48 @@ public class General {
 			JOptionPane.showMessageDialog(null, "Wrong authorization key!", "Account upgrade failed", JOptionPane.PLAIN_MESSAGE);
 		}
 		return 0;
+	}
+	
+	
+	public String [] getDateFromWeek(int week) {
+		float dayInMillis = 86400000;
+		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		int dayOfWeek = c.get(Calendar.DAY_OF_WEEK)-2; //#TODO
+		int weekDays = 7 * week;
+		String startAndEndDate [] = new String [2];
+		startAndEndDate[0] = sdf.format(System.currentTimeMillis()-(((dayOfWeek+weekDays)) * (dayInMillis)));
+		startAndEndDate[1] = sdf.format(System.currentTimeMillis()-(((dayOfWeek+weekDays)-4) * (dayInMillis)));
+		return startAndEndDate;
+	}
+ 	
+	public void restartApplication()
+	{
+	  final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+	  File currentJar;
+	try {
+		currentJar = new File(MainFrame.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+
+		  if(!currentJar.getName().endsWith(".jar"))
+		    return;
+		  
+		  final ArrayList<String> command = new ArrayList<String>();
+		  command.add(javaBin);
+		  command.add("-jar");
+		  command.add(currentJar.getPath());
+
+		  final ProcessBuilder builder = new ProcessBuilder(command);
+			try {
+				builder.start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		  System.exit(0);
+	} catch (URISyntaxException e1) {
+		e1.printStackTrace();
+	}
+
 	}
 
 

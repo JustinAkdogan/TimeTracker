@@ -47,6 +47,8 @@ public class TimeRegistrationsFrame extends JFrame{
 	
 	DefaultTableModel model = new DefaultTableModel(data, columnNames);
 	
+	final byte iconWidth = 32, iconHeight = 32;
+	
 	
 	public TimeRegistrationsFrame() {
 		
@@ -62,22 +64,22 @@ public class TimeRegistrationsFrame extends JFrame{
 		setVisible(true);
 		
 		closeBtn = new JButton();
-		closeBtn.setBounds(568, 0, 32, 32);
+		closeBtn.setBounds(568, 0, iconWidth, iconHeight);
 		closeBtn.setBorderPainted(false);
 		closeBtn.setBorder(null);
 		closeBtn.setContentAreaFilled(false);
 		closeBtn.setIcon(new ImageIcon(getClass().getResource("/close_operation.png")));
 		
 		minimizeBtn = new JButton();
-		minimizeBtn.setBounds(532, 0, 32, 32);
+		minimizeBtn.setBounds(532, 0, iconWidth, iconHeight);
 		minimizeBtn.setBorderPainted(false);
 		minimizeBtn.setBorder(null);
 		minimizeBtn.setContentAreaFilled(false);
 		minimizeBtn.setIcon(new ImageIcon(getClass().getResource("/minimize_operation.png")));
 		
 	
-		title = new JLabel("Mitarbeiter Spionagetool");
-		title.setBounds(general.centerObject(250),0,250,32);
+		title = new JLabel("All Time Registrations");
+		title.setBounds(general.centerObject(290),0,290,32);
 		title.setFont(new Font("Calibri",Font.PLAIN,22));
 		title.setForeground(Color.WHITE);
 		
@@ -114,14 +116,14 @@ public class TimeRegistrationsFrame extends JFrame{
 		description.setBounds(50,150,390,32);
 		
 		startSearch = new JButton();
-		startSearch.setBounds(455, 150, 32, 32);
+		startSearch.setBounds(455, 150, iconWidth, iconHeight);
 		startSearch.setBorderPainted(false);
 		startSearch.setBorder(null);
 		startSearch.setContentAreaFilled(false);
 		startSearch.setIcon(new ImageIcon(getClass().getResource("/search.png")));
 		
-		timeRegistration_title = new JLabel("Zeiterfassungen");
-		timeRegistration_title.setBounds(general.centerObject(150),210,150,32);
+		timeRegistration_title = new JLabel("Time Registrations");
+		timeRegistration_title.setBounds(general.centerObject(200),210,200,32);
 		timeRegistration_title.setFont(new Font("Calibri",Font.PLAIN,22));
 		timeRegistration_title.setForeground(Color.WHITE);
 		
@@ -157,7 +159,7 @@ public class TimeRegistrationsFrame extends JFrame{
 		{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
+				dispose();
 			}
 		});
 		
