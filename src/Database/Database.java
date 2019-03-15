@@ -159,8 +159,8 @@ public class Database {
 			int counter = 0;
 			while(rs.next()) {
 				records[counter][0] = rs.getString("projectid");
-				records[counter][1] = rs.getString("start");
-				records[counter][2] = rs.getString("end");
+				records[counter][1] = rs.getString("start").substring(0, 5);
+				records[counter][2] = rs.getString("end").substring(0, 5);
 				records[counter][3] = rs.getString("pause");
 				records[counter][4] = rs.getString("description");
 				counter++;
@@ -265,8 +265,8 @@ public class Database {
 			rs = st.executeQuery("SELECT * FROM mitarbeiter WHERE computername='"+ userid +"'");
 			if (rs.first()) {
 				authorizationLevel = rs.getInt("authorization");
+				return authorizationLevel;
 			}
-			return authorizationLevel;
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -279,19 +279,35 @@ public class Database {
 		ResultSet rs;
 		try {
 			st = con.createStatement();
-			rs = st.executeQuery("SELECT * FROM zeiterfassungen ORDER BY date DESC");
+			String query = "";
+			byte authorizationLevel = (byte) getAuthorizationLevel();
+			if (authorizationLevel < 1) {
+				query = "SELECT * FROM zeiterfassungen WHERE userid='"+ userid +"' ORDER BY date DESC";
+			}else {
+				query = "SELECT * FROM zeiterfassungen ORDER BY date DESC";
+			}
+			rs = st.executeQuery(query);
 			int counter = 0;
 			int datasets = 0;
 			String records [][] = new String [countAllTimeRegistrationDatasets()][7];
 			while(rs.next()) {
 				String fullname = fetchForAndLastname(rs.getString("userid"))[0]+ " " + fetchForAndLastname(rs.getString("userid"))[1];
-				records[counter][0] = rs.getString("date");
-				records[counter][1] = fullname; //fetchForAndLastname(rs.getString("userid"));
-				records[counter][2] = rs.getString("projectid");
-				records[counter][3] = rs.getString("start");
-				records[counter][4] = rs.getString("end");
-				records[counter][5] = rs.getString("pause");
-				records[counter][6] = rs.getString("description");
+				if (authorizationLevel > 1) {
+					records[counter][0] = rs.getString("date");
+					records[counter][1] = fullname; //fetchForAndLastname(rs.getString("userid"));
+					records[counter][2] = rs.getString("projectid");
+					records[counter][3] = rs.getString("start").substring(0, 5);
+					records[counter][4] = rs.getString("end").substring(0, 5);
+					records[counter][5] = rs.getString("pause");
+					records[counter][6] = rs.getString("description");
+				}else {
+					records[counter][0] = rs.getString("date");
+					records[counter][1] = rs.getString("projectid");
+					records[counter][2] = rs.getString("start").substring(0, 5);
+					records[counter][3] = rs.getString("end").substring(0, 5);
+					records[counter][4] = rs.getString("pause");
+					records[counter][5] = rs.getString("description");
+				}
 				counter++;
 			}
 			return records;
@@ -380,6 +396,7 @@ public class Database {
 	public String [][] filterTimeRegistrationDatasets(String fields[]) {
 		Statement st;
 		ResultSet rs;
+		byte authorizationLevel = (byte) getAuthorizationLevel();
 		try {
 			st = con.createStatement();
 			String query = "SELECT * FROM zeiterfassungen WHERE ";
@@ -402,26 +419,44 @@ public class Database {
 				query += "pause='" + fields[5] + "' AND ";
 			}
 			if (!fields[6].isEmpty()) {
-				query += "description='" + fields[6] + "'";
+				query += "description='" + fields[6] + "' AND ";
 			}
-			if (fields[6].isEmpty() || fields[5].isEmpty() || fields[4].isEmpty() || fields[3].isEmpty() || fields[2].isEmpty() || fields[1].isEmpty() || fields[0].isEmpty()) {
-				if (query.substring(query.length()-4, query.length()).contains("AND")) {
-					query = query.substring(0, query.length()-4);
-				}
+			if (authorizationLevel < 1) {
+				query += "userid='"+ userid +"'";
+			}else if (!Boolean.parseBoolean(fields[7])) {
+				query += "userid!='"+ userid +"'";
+			}else {
+				//query += "userid='"+ userid +"'";
 			}
+			
+			if (query.substring(query.length()-4, query.length()).contains("AND")) {
+				query = query.substring(0, query.length()-4);
+			}else if (query.substring(query.length()-6, query.length()).contains("WHERE")) {
+				query = query.substring(0, query.length()-6);
+			}
+			System.out.println(query);
 			rs = st.executeQuery(query);
 			int datasets = 0;
 			String records [][] = new String [countFilteredTimeRegistrationDatasets(query)][7]; //#TODO
 			int rowCounter = 0;
 			while(rs.next()) {
 				String fullname = fetchForAndLastname(rs.getString("userid"))[0]+ " " + fetchForAndLastname(rs.getString("userid"))[1];
-				records[rowCounter][0] = rs.getString("date");
-				records[rowCounter][1] = fullname;//fetchForAndLastname(rs.getString("userid"))[0]+ " " + fetchForAndLastname(rs.getString("userid"))[1];
-				records[rowCounter][2] = rs.getString("projectid");
-				records[rowCounter][3] = rs.getString("start");
-				records[rowCounter][4] = rs.getString("end");
-				records[rowCounter][5] = rs.getString("pause");
-				records[rowCounter][6] = rs.getString("description");
+				if (authorizationLevel > 0) {
+					records[rowCounter][0] = rs.getString("date");
+					records[rowCounter][2] = rs.getString("projectid");
+					records[rowCounter][1] = fullname;//fetchForAndLastname(rs.getString("userid"))[0]+ " " + fetchForAndLastname(rs.getString("userid"))[1];
+					records[rowCounter][3] = rs.getString("start");
+					records[rowCounter][4] = rs.getString("end");
+					records[rowCounter][5] = rs.getString("pause");
+					records[rowCounter][6] = rs.getString("description");
+				}else {
+					records[rowCounter][0] = rs.getString("date");
+					records[rowCounter][1] = rs.getString("projectid");
+					records[rowCounter][2] = rs.getString("start");
+					records[rowCounter][3] = rs.getString("end");
+					records[rowCounter][4] = rs.getString("pause");
+					records[rowCounter][5] = rs.getString("description");
+				}
 				rowCounter++;
 			}
 			return records;
@@ -464,8 +499,8 @@ public class Database {
 			int counter = 0;
 			while(rs.next()) {
 					tableData[counter][0] = rs.getString("projectid");
-					tableData[counter][1] = rs.getString("start");
-					tableData[counter][2] = rs.getString("end");
+					tableData[counter][1] = rs.getString("start").substring(0, 5);
+					tableData[counter][2] = rs.getString("end").substring(0, 5);
 					tableData[counter][3] = rs.getString("pause");
 					tableData[counter][4] = rs.getString("description");
 					counter++;

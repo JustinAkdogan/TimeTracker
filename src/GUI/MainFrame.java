@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
@@ -22,6 +23,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -90,6 +92,7 @@ public class MainFrame extends JFrame {
 	float dayInMillis = 86400000;
     float [] weekHours = {0,0,0,0,0};
     final byte iconWidth = 32, iconHeight = 32;
+    final Color background = new java.awt.Color(224, 74, 74);
      
     
     //GUI Elements
@@ -104,26 +107,42 @@ public class MainFrame extends JFrame {
 	    //table = new JTable(new DefaultTableModel(getTableData(), columnNames));
 	 	
 		table = new JTable(new DefaultTableModel(getTableData(), columnNames)) {
-		    @Override
-		    public boolean isCellEditable(int row, int column) {    
-		    	if (row >= 0) {
-		    		String cellValue = (String) table.getValueAt(row-1, column); //#TODO FIX
-		    		if (cellValue == "" || cellValue == null) {
-		    			return false;
-		    		}else {
-		    			return true; 
-		    		}
-		    	}else {
-		    		return false;
-		    	}	    
-		    };
+//		    @Override
+//		    public boolean isCellEditable(int row, int column) {    
+//		    	if (row > 0) {
+//		    		String cellValue = (String) table.getValueAt(row-1, column); //#TODO FIX
+//		    		if (cellValue == "" || cellValue == null) {
+//		    			return false;
+//		    		}else {
+//		    			return true; 
+//		    		}
+//		    	}else {
+//		    		return false;
+//		    	}	    
+//		    };
+			
+//			@Override
+//			public void setValueAt(Object o, int row, int column) {
+//			    if (o instanceof String) {
+//			        char c = ((String) o).charAt(0);
+//
+//			        if (((String) o).length() == 1 && c >= '0' && c <= '9') {
+//			            //data[row][column] = "9";
+//			        	table.setValueAt(o, row, column);
+//			            return;
+//			        }
+//			    }
+//			    JOptionPane.showMessageDialog(null, "Must input a number from 0-9");
+//			 }
+
+			
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
 		        Component comp = super.prepareRenderer(renderer, row, col);
 		        Object value = getModel().getValueAt(row, col);
 		        if (lastEditedRow == row && !isTablePlausible) {
 		        	if (value.equals(wrongColumnValues[0]) || value.equals(wrongColumnValues[1]) || value.equals(wrongColumnValues[2]) ||
-		        		value.equals(wrongColumnValues[3]) || value.equals(wrongColumnValues[4])) {
+		        		value.equals(wrongColumnValues[3]) || value.equals(wrongColumnValues[4])){
 		        		comp.setBackground(Color.RED);
 		        	}else {
 		        		comp.setBackground(Color.WHITE);
@@ -282,7 +301,7 @@ public class MainFrame extends JFrame {
 		add(jp);
 		validate();
 		
-		jp.setBackground(new java.awt.Color(224, 74, 74));	
+		jp.setBackground(background);	
 		
 		//GUI Trigger
 		
@@ -394,15 +413,15 @@ public class MainFrame extends JFrame {
 	
 	private void openAllTimeRegistrations() {
 		if (isConnectedToSQL) {
-			if (database.getAuthorizationLevel() >= 1) {
-				TimeRegistrationsFrame timeRegistrationFrame = new TimeRegistrationsFrame();
-			}
+			TimeRegistrationsFrame timeRegistrationFrame = new TimeRegistrationsFrame();
 		}
 	}
 	
 	private void OnAfterValidateTable() { 
 		if (table.isEnabled()) {
 			fetchLastEndTime(); 
+			correctStartAndEndTime();
+			checkIfInputIsTooLong();
 			if (isRowPlausible()) {
 				addRowIfNeeded();	
 				updateOrInsertRecord();
@@ -410,52 +429,105 @@ public class MainFrame extends JFrame {
 		}
 	}
 	
+	private void correctStartAndEndTime() {
+		if (table.getValueAt(table.getEditingRow(), 2) != null && table.getValueAt(table.getEditingRow(), 2) != "" && table.getEditingColumn() != 2) {
+			String columnVal = table.getValueAt(table.getEditingRow(), 2).toString();
+			if (columnVal.length() < 5 && columnVal != null) {
+				try {
+					LocalTime endTime = LocalTime.of(checkPlausibility.splitStringIntoHoursAndMinutes(columnVal)[0], checkPlausibility.splitStringIntoHoursAndMinutes(columnVal)[1]);	
+					table.setValueAt(endTime, table.getEditingRow(), 2);
+					isTablePlausible = true;
+				}catch(StringIndexOutOfBoundsException ex) {
+					wrongColumnValues[2] = table.getValueAt(table.getEditingRow(), 2).toString();
+					isTablePlausible = false;
+					JOptionPane.showMessageDialog(null, "Please change your End Time", "End Time is Invalid", JOptionPane.OK_CANCEL_OPTION);
+				}
+			}
+		}else if (table.getValueAt(table.getEditingRow(), 1) != null && table.getValueAt(table.getEditingRow(), 1) != "" && table.getEditingColumn() != 1) {
+			String columnVal = table.getValueAt(table.getEditingRow(), 1).toString();
+			if (columnVal.length() < 5 && columnVal != null) {
+				try {
+					LocalTime startTime = LocalTime.of(checkPlausibility.splitStringIntoHoursAndMinutes(columnVal)[0], checkPlausibility.splitStringIntoHoursAndMinutes(columnVal)[1]);	
+					table.setValueAt(startTime, table.getEditingRow(), 1);
+					isTablePlausible = true;
+				}catch(StringIndexOutOfBoundsException ex) {
+//					wrongColumnValues[1] = table.getValueAt(table.getEditingRow(), 2).toString();
+//					isTablePlausible = false;
+					JOptionPane.showMessageDialog(null, "Please change your Start Time", "Start Time is Invalid", JOptionPane.OK_CANCEL_OPTION);
+				}
+			}
+		}
+	}
+	
+	private void correctPauseTime() {
+		
+	}
+	
+	private void checkIfInputIsTooLong() {
+		int currColumn = table.getEditingColumn();
+		String columnValue = ""+table.getValueAt(table.getEditingRow(), table.getEditingColumn());
+		if (currColumn == 0 && columnValue.length() > 11) {
+			columnValue = columnValue.substring(0, 11);
+			table.setValueAt(columnValue, table.getEditingRow(), table.getEditingColumn());
+			//Message?
+		}
+	}
+	
+	
 	private boolean isRowPlausible() {
 		lastEditedRow = table.getEditingRow();
-				
-		if (table.getValueAt(table.getEditingRow(), 0) != null && table.getValueAt(table.getEditingRow(), 1) != null &&
-			table.getValueAt(table.getEditingRow(), 2) != null && table.getValueAt(table.getEditingRow(), 3) != null &&
-			table.getValueAt(table.getEditingRow(), 4) != null){
-	
-			if (!checkPlausibility.checkIfStartTimeIsBeforeLastEndTime(table.getValueAt(table.getEditingRow(), 1), table.getValueAt(table.getEditingRow(), 2))) {	
-				isTablePlausible = false;
-				wrongColumnValues[2] = ""+table.getValueAt(table.getEditingRow(), 2);
-				return false;
+		
+		String rowValues [] = storeRowDataInArray();
+		
+		if (rowValues[0] != null && rowValues[1] != null && rowValues[2] != null && rowValues[3] != null && rowValues[4] != null) {		
+			if (rowValues[0].length() > 0 && rowValues[1].length() > 0 && rowValues[2].length() > 0 && rowValues[3].length() > 0 && rowValues[4].length() > 0 ){
+				if (!checkPlausibility.checkIfStartTimeIsBeforeLastEndTime(""+table.getValueAt(table.getEditingRow(), 1),""+table.getValueAt(table.getEditingRow(), 2))) {	
+					isTablePlausible = true;
+					return true;
+				}else {
+					wrongColumnValues[2] = table.getValueAt(table.getEditingRow(), 2).toString();
+					isTablePlausible = false;
+				}
 			}
-		}else {
-			return false;
 		}
-		isTablePlausible = true;
-		return true;
+		return false;
 	}
 		
 	private void fetchLastEndTime() {
-		 String lastEndTime = database.fetchLastEndTimeFromToday();
-		 if (table.getValueAt(table.getEditingRow(), 1) == null && table.getValueAt(table.getEditingRow(), 0) != null) {
-			 table.setValueAt(lastEndTime, table.getEditingRow(), 1);
+		final String lastEndTime = database.fetchLastEndTimeFromToday();
+		
+		 if (table.getValueAt(table.getEditingRow(), 0) != null && table.getEditingRow() > 0)   {
+			 if (table.getValueAt(table.getEditingRow(), 1) == null || table.getValueAt(table.getEditingRow(), 1) == "" ) {
+				 table.setValueAt(lastEndTime, table.getEditingRow(), 1);
+			 }
 		 }
 	}
 	
 	private void addRowIfNeeded() {
 		 if (table.getEditingRow()+1 == table.getRowCount()) {
-			Object newRow [] = {"","","","",""};
+			Object newRow [] = {"","","","0.00",""};
 			 model.addRow(newRow);
 		 }
 	}
 	
 	private void updateOrInsertRecord() {
 		
-		 String rowData [] = new String [5];
-		 rowData[0] = (String) table.getValueAt(table.getEditingRow(), 0);
-		 rowData[1] = (String) table.getValueAt(table.getEditingRow(), 1);
-		 rowData[2] = (String) table.getValueAt(table.getEditingRow(), 2);
-		 rowData[3] = (String) table.getValueAt(table.getEditingRow(), 3);
-		 rowData[4] = (String) table.getValueAt(table.getEditingRow(), 4);
+		 String rowData [] = storeRowDataInArray();
 		
 		if (rowData[0] != null && rowData[1] != null && rowData[2] != null && rowData[4] != null) {
 			database.changeTimeRegistrationDataset(rowData, table.getEditingColumn());
 			refreshBarChart();
 		}
+	}
+	
+	private String [] storeRowDataInArray() {
+		 String rowData [] = new String [5];
+		 rowData[0] = (String) table.getValueAt(table.getEditingRow(), 0);
+		 rowData[1] = ""+table.getValueAt(table.getEditingRow(), 1);
+		 rowData[2] = ""+table.getValueAt(table.getEditingRow(), 2);
+		 rowData[3] = (String) table.getValueAt(table.getEditingRow(), 3);
+		 rowData[4] = (String) table.getValueAt(table.getEditingRow(), 4);
+		 return rowData;
 	}
 		
 	private void OnAfterSQLConnect() {

@@ -143,7 +143,7 @@ public class SettingsFrame extends JFrame {
 		testSQLConnection.setBorderPainted(false);
 		testSQLConnection.setBorder(null);
 		testSQLConnection.setContentAreaFilled(false);
-		testSQLConnection.setIcon(new ImageIcon(getClass().getResource("/search.png")));
+		testSQLConnection.setIcon(new ImageIcon(getClass().getResource("/connect_to_database.png")));
 		
 		forname = new JTextField("");
 		forname.setBounds(50,260,153,32);
@@ -256,10 +256,10 @@ public class SettingsFrame extends JFrame {
 	private void onAfterValidateTestSQLConnection() {
 		settings.changeSettings(getDatabaseTextFieldValues());
 		if (showMemberFieldsIfIsConnectedToDatabase()) {
-			JOptionPane.showMessageDialog(null, "Connection to database was succuessful.", "Test Successful", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Connection to database was succuessful.", "Test Successful", JOptionPane.OK_CANCEL_OPTION);
 			general.restartApplication();
 		}else {
-			JOptionPane.showMessageDialog(null, "Connection to database failed.", "Test failed", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(null, "Connection to database failed.", "Test failed", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	

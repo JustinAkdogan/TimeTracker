@@ -102,7 +102,8 @@ public class General {
 		startAndEndDate[1] = sdf.format(System.currentTimeMillis()-(((dayOfWeek+weekDays)-4) * (dayInMillis)));
 		return startAndEndDate;
 	}
- 	
+	
+	
 	public void restartApplication()
 	{
 	  final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
