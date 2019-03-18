@@ -79,6 +79,7 @@ public class MainFrame extends JFrame {
 	JTable table;
 	String [][] data;
 	DefaultTableCellRenderer tableRenderer = new DefaultTableCellRenderer();
+	JScrollPane scrollPane;
 	ListSelectionModel selectionModel;
 	
 	//Variables
@@ -107,19 +108,19 @@ public class MainFrame extends JFrame {
 	    //table = new JTable(new DefaultTableModel(getTableData(), columnNames));
 	 	
 		table = new JTable(new DefaultTableModel(getTableData(), columnNames)) {
-//		    @Override
-//		    public boolean isCellEditable(int row, int column) {    
-//		    	if (row > 0) {
-//		    		String cellValue = (String) table.getValueAt(row-1, column); //#TODO FIX
-//		    		if (cellValue == "" || cellValue == null) {
-//		    			return false;
-//		    		}else {
-//		    			return true; 
-//		    		}
-//		    	}else {
-//		    		return false;
-//		    	}	    
-//		    };
+		    @Override
+		    public boolean isCellEditable(int row, int column) {    
+		    	
+		    	if (row > 0) {
+		    		if (column == 1) {
+		    			return false;
+		    		}
+		    		if (column == 2 && table.getValueAt(row, 1) == "") {
+		    			return false;
+		    		}
+		    	}
+		    	return true;
+		    };
 			
 //			@Override
 //			public void setValueAt(Object o, int row, int column) {
@@ -157,7 +158,7 @@ public class MainFrame extends JFrame {
 		
 		 model = (DefaultTableModel) table.getModel();
 
-	    JScrollPane scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	    scrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setViewportView(table);
 		
 		//GUI Layout
@@ -174,7 +175,7 @@ public class MainFrame extends JFrame {
 		
 		//Element Options
 		scrollPane.setBounds((width-490)/2,250,490,320);
-		
+		//37
 		chartPanel.setBounds(general.centerObject(490), 600, 490, 200);
 		
 		closeBtn = new JButton();
@@ -421,12 +422,65 @@ public class MainFrame extends JFrame {
 		if (table.isEnabled()) {
 			fetchLastEndTime(); 
 			correctStartAndEndTime();
+			correctPause();
 			checkIfInputIsTooLong();
 			if (isRowPlausible()) {
 				addRowIfNeeded();	
 				updateOrInsertRecord();
 			}
 		}
+	}
+	
+	private void correctPause() {
+		//if (table.getValueAt(table.getEditingRow(), 3).toString() != null && table.getValueAt(table.getEditingRow(), 3).toString() != "") {
+			String pauseValue = "";
+			try {
+				pauseValue = table.getValueAt(table.getEditingRow(), 3).toString();
+				if (IsPauseIntegerOrFloat(pauseValue)) {
+					if (pauseValue.contains(",")) {
+						pauseValue = pauseValue.replace(",", ".");
+						setValueInColumn(pauseValue, 3); 
+					}else if (pauseValue.length() >= 3 && !pauseValue.contains(".")) {
+						pauseValue = pauseValue.substring(0, 1) + "." + pauseValue.substring(1, 3);
+						setValueInColumn(pauseValue, 3); 
+					}
+				}else {
+					JOptionPane.showMessageDialog(null, "Pause should be written like '0' or '0.00'", "Pause is'nt Valid", 0);
+					pauseValue = "0.00";
+					setValueInColumn(pauseValue, 3); 
+				}
+			}catch(NullPointerException ex) {
+				
+			}
+	}
+	
+	private void setValueInColumn(String value, int column) {
+		table.setValueAt(value, table.getEditingRow(), column);
+	}
+	
+	private boolean IsPauseIntegerOrFloat(String pauseValue) {
+		
+		boolean isInputValid = false;
+		
+		if (pauseValue.contains(",")) {
+			pauseValue = pauseValue.replace(",", ".");
+		}
+		
+		try {
+			if (pauseValue != null && pauseValue != "" && !pauseValue.isEmpty()) {
+				int testValue = Integer.parseInt(pauseValue);
+				isInputValid = true;
+			}
+		}catch(NumberFormatException ex) {}
+		
+		try {
+			if (pauseValue != null && pauseValue != "" && !pauseValue.isEmpty()) {
+				Float testValue = Float.parseFloat(pauseValue);
+				isInputValid = true;
+			}
+		}catch(NumberFormatException ex) {}
+		
+		return isInputValid;
 	}
 	
 	private void correctStartAndEndTime() {
@@ -506,7 +560,7 @@ public class MainFrame extends JFrame {
 	private void addRowIfNeeded() {
 		 if (table.getEditingRow()+1 == table.getRowCount()) {
 			Object newRow [] = {"","","","0.00",""};
-			 model.addRow(newRow);
+			model.addRow(newRow);
 		 }
 	}
 	

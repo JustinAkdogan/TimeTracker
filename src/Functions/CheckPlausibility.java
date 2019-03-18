@@ -25,7 +25,7 @@ public class CheckPlausibility {
 		String hours = timeString.substring(0, timeString.indexOf(":"));
 		String minutes = "";
 		int [] time = new int [2];
-		if (countSeparators(timeString) > 1) {
+		if (countSeparators(timeString,":") > 1) {
 			minutes = timeString.substring(timeString.indexOf(":")+1,  timeString.lastIndexOf(":"));
 		}else {
 			minutes = timeString.substring(timeString.indexOf(":")+1,  timeString.length());
@@ -36,10 +36,26 @@ public class CheckPlausibility {
 		return time;
 	}
 	
-	private int countSeparators(String timeString) {
+	public int [] splitStringIntoHoursAndMinutes2(String timeString) {
+		
+		String hours = timeString.substring(0, timeString.indexOf("."));
+		String minutes = "";
+		int [] time = new int [2];
+		if (countSeparators(timeString,":") > 1) {
+			minutes = timeString.substring(timeString.indexOf(".")+1,  timeString.lastIndexOf("."));
+		}else {
+			minutes = timeString.substring(timeString.indexOf(".")+1,  timeString.length());
+		}
+		time[0] = Integer.parseInt(hours);
+		time[1] = Integer.parseInt(minutes);
+		
+		return time;
+	}
+		
+	private int countSeparators(String timeString, String seperator) {
 		int counter = 0;
 		for (int i=0; i < timeString.length(); i++) {
-			if (timeString.substring(i, i+1).contains(":")) {
+			if (timeString.substring(i, i+1).contains(seperator)) {
 				counter++;
 			}
 		}
