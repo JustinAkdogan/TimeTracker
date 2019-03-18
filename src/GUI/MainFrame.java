@@ -122,20 +122,6 @@ public class MainFrame extends JFrame {
 		    	return true;
 		    };
 			
-//			@Override
-//			public void setValueAt(Object o, int row, int column) {
-//			    if (o instanceof String) {
-//			        char c = ((String) o).charAt(0);
-//
-//			        if (((String) o).length() == 1 && c >= '0' && c <= '9') {
-//			            //data[row][column] = "9";
-//			        	table.setValueAt(o, row, column);
-//			            return;
-//			        }
-//			    }
-//			    JOptionPane.showMessageDialog(null, "Must input a number from 0-9");
-//			 }
-
 			
 		    @Override
 		    public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
